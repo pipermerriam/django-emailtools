@@ -112,8 +112,12 @@ class TestHTMLEmail(TestCase):
         self.create_and_send_a_message()
         message = mail.outbox[0]
         html_body = message.alternatives[0][0]
-        self.assertInHTML('<h1>test title</h1>', html_body)
-        self.assertInHTML('<p>test content</p>', html_body)
+        try:
+            self.assertInHTML('<h1>test title</h1>', html_body)
+            self.assertInHTML('<p>test content</p>', html_body)
+        except AttributeError:  # support for < django 1.5
+            self.assertIn('<h1>test title</h1>', html_body)
+            self.assertIn('<p>test content</p>', html_body)
 
     def test_plain_body(self):
         self.create_and_send_a_message()
