@@ -134,18 +134,6 @@ class BasicEmail(BaseEmail):
         return self.connection
 
 
-class BaseHTMLEmail(BasicEmail):
-    email_message_class = EmailMultiAlternatives
-
-    def get_email_message(self):
-        message = super(BaseHTMLEmail, self).get_email_message()
-        message.attach_alternative(self.get_html_body(), "text/html")
-        return message
-
-    def get_html_body(self):
-        return self.get_body()
-
-
 class TemplateEmailMixin(object):
     template_name = None
 
@@ -154,21 +142,29 @@ class TemplateEmailMixin(object):
             raise ImproperlyConfigured('No `template_name` provided')
         return [self.template_name]
 
-    def get_html_body(self):
+    def get_context_data(self, **kwargs):
+        return kwargs
+
+    def get_rendered_template(self):
         return loader.render_to_string(
             self.get_template_names(),
             self.get_context_data(),
         )
 
-    def get_context_data(self, **kwargs):
-        return kwargs
+    def get_body(self):
+        return self.get_rendered_template()
+
+
+class HTMLEmail(TemplateEmailMixin, BasicEmail):
+    email_message_class = EmailMultiAlternatives
+
+    def get_email_message(self):
+        message = super(HTMLEmail, self).get_email_message()
+        message.attach_alternative(self.get_rendered_template(), "text/html")
+        return message
 
     def get_body(self):
-        return strip_tags(self.get_html_body())
-
-
-class HTMLEmail(TemplateEmailMixin, BaseHTMLEmail):
-    pass
+        return strip_tags(super(HTMLEmail, self).get_body())
 
 
 class MarkdownEmail(HTMLEmail):
@@ -182,14 +178,9 @@ class MarkdownEmail(HTMLEmail):
             raise ValueError('layout was not defined by settings.EMAIL_LAYOUT and none was provided')
         return [self.layout_template]
 
-    def get_body(self):
-        return loader.render_to_string(
-            self.get_template_names(),
-            self.get_context_data(),
-        )
-
-    def get_html_body(self):
+    def get_rendered_template(self):
+        md = super(MarkdownEmail, self).get_rendered_template()
         return loader.render_to_string(
             self.get_layout_template(),
-            {'content': mark_safe(markdown.markdown(self.get_body(), ['extra']))},
+            {'content': mark_safe(markdown.markdown(md, ['extra']))},
         )
