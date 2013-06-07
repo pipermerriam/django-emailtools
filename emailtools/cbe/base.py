@@ -5,6 +5,11 @@ from django.core.exceptions import ImproperlyConfigured
 
 
 class BaseEmail(object):
+    """
+    Simple base class for all class-based emails.  Implements the basic
+    structure for constructing an email message and sending it, along with the
+    `as_callable` method logic.
+    """
     email_message_class = None
 
     def get_email_message_kwargs(self, **kwargs):

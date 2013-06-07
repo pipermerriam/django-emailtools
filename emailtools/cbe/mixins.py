@@ -3,6 +3,9 @@ from django.core.exceptions import ImproperlyConfigured
 
 
 class TemplateEmailMixin(object):
+    """
+    Mixin for using template rendering for the email message body.
+    """
     template_name = None
 
     def get_template_names(self):

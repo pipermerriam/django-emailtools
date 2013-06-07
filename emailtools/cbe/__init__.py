@@ -12,6 +12,9 @@ from .mixins import TemplateEmailMixin
 
 
 class BasicEmail(BaseEmail):
+    """
+    Class-based email based around `django.core.email.EmailMessage`
+    """
     email_message_class = EmailMessage
     subject = None
     to = None
@@ -84,6 +87,9 @@ class BasicEmail(BaseEmail):
 
 
 class HTMLEmail(TemplateEmailMixin, BasicEmail):
+    """
+    Sends an HTML email.
+    """
     email_message_class = EmailMultiAlternatives
 
     def get_email_message(self):
@@ -96,6 +102,9 @@ class HTMLEmail(TemplateEmailMixin, BasicEmail):
 
 
 class MarkdownEmail(HTMLEmail):
+    """
+    Renders a markdown template into an HTML email.
+    """
     layout_template = None
     template_name = None
 
