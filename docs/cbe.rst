@@ -10,7 +10,7 @@ Ultimately, the goal of class-based emails is to assist developers in following
 the DRY principle and reuse code through inheritance and mixin classes.
 
 Basic Example
--------------
+~~~~~~~~~~~~~
 
 A very basic example of sending emails in django using the built in
 ``send_mail`` function might look something like the following.::
@@ -44,7 +44,7 @@ itself.
 
 
 A More Useful Example
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 Our basic example isn't actually that useful.  Lets modify it a bit to allow us
 to dynamically set the ``to`` address on the email.  To do this, we will
@@ -65,7 +65,7 @@ subclass :class:`~emailtools.BasicEmail` and override the method
 
 
 HTML Emails
------------
+~~~~~~~~~~~
 
 class-based emails provides the class :class:`~emailtools.HTMLEmail`.  Lets
 improve on our previous example.  First lets make ourselves a template.::
@@ -98,7 +98,7 @@ message a bit and include the email address in the body of the message.::
 This should be very familiar to anyone who's had any experience with class-based views.
 
 Markdown Emails
----------------
+~~~~~~~~~~~~~~~
 
 We all know how much developers love markdown.  ``django-emailtools`` also
 ships with a :class:`~emailtools.MarkdownEmail` class.
