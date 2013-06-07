@@ -10,6 +10,7 @@ Contents:
 
     intro
     cbe
+    how-to
     changelog
 
 Development
