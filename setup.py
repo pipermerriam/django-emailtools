@@ -35,7 +35,7 @@ setup(
     name='django-emailtools',
     version=get_version(),
     description=__doc__,
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     packages=[package for package in find_packages() if package.startswith('emailtools')],
     install_requires=install_requires,
     zip_safe=False,
