@@ -86,6 +86,14 @@ class TestBasicCBE(TestCase):
         with self.assertRaises(ImproperlyConfigured):
             self.create_and_send_a_message(body=None)()
 
+    def test_sending_kwargs(self):
+        class SendingKwargsEmail(self.TestEmail):
+            from_email = 'with\nnewline@gmail.com'
+
+        SendingKwargsEmail.as_callable(fail_silently=True)()
+        with self.assertRaises(mail.BadHeaderError):
+            SendingKwargsEmail.as_callable()()
+
 
 class TestHTMLEmail(TestCase):
     EMAIL_ATTRS = {

@@ -64,7 +64,7 @@ class BasicEmail(BaseEmail):
 
     def get_send_kwargs(self, **kwargs):
         kwargs = super(BasicEmail, self).get_send_kwargs(**kwargs)
-        kwargs['fail_silently'] = self.get_fail_silently()
+        kwargs.setdefault('fail_silently', self.get_fail_silently())
         return kwargs
 
     def get_from_email(self):

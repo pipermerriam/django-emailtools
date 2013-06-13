@@ -27,7 +27,7 @@ class BaseEmail(object):
         return kwargs
 
     def send(self):
-        self.get_email_message().send(self.get_send_kwargs())
+        self.get_email_message().send(**self.get_send_kwargs())
 
     def __init__(self, **kwargs):
         for key, value in kwargs.iteritems():
