@@ -39,7 +39,7 @@ Using class-based emails::
 
 In both examples, calling the ``send_welcome_email`` function will send our
 welcome email to ``user@example.com``.  Since we only wanted to set a few
-attributes, we pass these into the :method:`~BaseEmail.as_callable` method
+attributes, we pass these into the :meth`~BaseEmail.as_callable` method
 itself.
 
 
@@ -49,19 +49,30 @@ A More Useful Example
 Our basic example isn't actually that useful.  Lets modify it a bit to allow us
 to dynamically set the ``to`` address on the email.  To do this, we will
 subclass :class:`~emailtools.BasicEmail` and override the method
-:method:`get_to` which is responsible for setting the ``to`` address.::
+:meth`get_to` which is responsible for setting the ``to`` address.::
 
     from emailtools.cbe import BasicEmail
 
     class WelcomeEmail(BasicEmail):
-        from_email = 'admin@example.com',
-        subject = 'Welcome',
-        body = 'Welcome to example.com',
+        from_email = 'admin@example.com'
+        subject = 'Welcome'
+        body = 'Welcome to example.com'
 
         def get_to(self):
             return self.args[0]
 
      send_welcome_email = WelcomeEmail.as_callable()
+
+     # Send the email
+     send_welcome_email('user@example.com')
+
+Instead of passing all of configuration in through
+:meth:`~emailtools.HTMLEmail.as_callable`, we define them as attributes on the
+class.  Inside of our :meth:`~emailtools.HTMLEmail.get_to` we access
+``self.args`` to get the ``to`` email address.  The 'callable` email function
+returned by :meth:`~emailtools.HTMLEmail.as_callable` sets the ``args`` and
+``kwargs`` on the ``self``, making them accessible from ``self.args`` and
+``self.kwargs`` within your class.
 
 
 HTML Emails
@@ -80,9 +91,9 @@ message a bit and include the email address in the body of the message.::
     from emailtools.cbe import HTMLEmail
 
     class WelcomeEmail(HTMLEmail):
-        from_email = 'admin@example.com',
-        subject = 'Welcome',
-        body = 'Welcome to example.com',
+        from_email = 'admin@example.com'
+        subject = 'Welcome'
+        body = 'Welcome to example.com'
         template_name = 'welcome_email.html'
 
         def get_to(self):
@@ -94,6 +105,9 @@ message a bit and include the email address in the body of the message.::
             return kwargs
 
      send_welcome_email = WelcomeEmail.as_callable()
+     
+     # Send the email
+     send_welcome_email('user@example.com')
 
 This should be very familiar to anyone who's had any experience with class-based views.
 
@@ -108,7 +122,7 @@ ships with a :class:`~emailtools.MarkdownEmail` class.
     :class:`~emailtools.MarkdownEmail` requires a layout template.  By default,
     it will use whatever is set in ``settings.EMAIL_LAYOUT``.  This can be
     overridden on subclasses with the ``layout_template`` attribute, or
-    dynamically via the :method:`~emailtools.MarkdownEmail.get_layout_template`
+    dynamically via the :meth`~emailtools.MarkdownEmail.get_layout_template`
     method.
 
     This template is responsible for constructing the html that wraps around
