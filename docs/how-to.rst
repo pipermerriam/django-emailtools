@@ -21,6 +21,7 @@ does this in the built in :class:`PasswordResetForm` packaged with
 ``django.contrib.auth``.:
 
 .. code-block:: python
+
     class PasswordResetForm(forms.Form):
         email = forms.EmailField(label=_("Email"), max_length=254)
 
