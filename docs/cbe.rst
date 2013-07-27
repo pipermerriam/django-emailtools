@@ -129,3 +129,27 @@ And now our template.
     <p>The example.com team</p>
 
 Now, our message will be rendered using the template engine.
+
+
+About ``as_callable(**kwargs)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At this point, if you've used class based views, you should be noticing some
+similarities in ``as_callable`` and ``as_view``.  ``as_callable`` returns a
+callable function that will send the email.  Any ``*args`` and ``kwargs``
+passed into the email callable are accessible via ``self.args`` and
+``self.kwargs``, similar to class based views.  The specifics of how you use
+these arguments is up to you.
+
+In addition, the email callable has a method ``message``.
+
+.. code-block:: python
+
+   >>> from my_app.emails import send_welcome_email
+   >>> send_welcome_email(...)  # Sends the email.
+   >>> message = send_welcome_email.message(...)
+   >>> message
+   <django.core.mail.message.EmailMultiAlternatives at 0x10668d150>
+   >>> message.send()  # Also sends the email.
+   
+Directly calling the email callable, and calling ``send()`` on the instantiated email message are identical.  Both the email callable, and the ``message`` method have the same call signature.
