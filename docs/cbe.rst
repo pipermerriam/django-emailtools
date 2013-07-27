@@ -45,8 +45,8 @@ Now, here is the same example using class based emails.
 In both examples, calling the ``send_registration_email`` function will send an email to `webmaster@example.com` from the address `webmaster@example.com` with the subject *"A user has registered"* and with the message body *"A new user has registered on example.com"*.  Admittedly, this example is not very useful, so lets look at making some of these values more dynamic.
 
 
-Setting dynamic values
-~~~~~~~~~~~~~~~~~~~~~~
+Emails with dynamic values
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now, lets write another example, in which our message body and the email recipient list and message body are dynamic.
 
@@ -79,64 +79,53 @@ Our new ``send_welcome_email`` function expects a single argument which it expec
    >>> user = User.objects.get(...)
    >>> send_welcome_email(user)  # Sends the welcome email.
 
-Instead of passing all of configuration in through
-:meth:`~emailtools.HTMLEmail.as_callable`, we define them as attributes on the
-class.  Inside of our :meth:`~emailtools.HTMLEmail.get_to` we access
-``self.args`` to get the ``to`` email address.  The 'callable` email function
-returned by :meth:`~emailtools.HTMLEmail.as_callable` sets the ``args`` and
-``kwargs`` on the ``self``, making them accessible from ``self.args`` and
-``self.kwargs`` within your class.
+.. note::
+
+   The :class:`~email.BasicEmail` class is essentially a wrapper around the
+   ``django.core.email.EmailMessage`` class with both properties and method
+   hooks for configuring, instantiating, and sending emails using that class.
 
 
 HTML Emails
 ~~~~~~~~~~~
 
-class-based emails provides the class :class:`~emailtools.HTMLEmail`.  Lets
-improve on our previous example.  First lets make ourselves a template.::
+While the simple examples above may work well for simple emails, most modern
+web applications are not just sending plain text emails.  ``emailtools`` ships
+with two solutions for constructing and sending emails with both a plain text
+message and an html message. Both the :class:`~emailtools.HTMLEmail` and
+:class:`~emailtools.MarkdownEmail` classes extend
+``django.core.email.EmailMultiAlternative``, and uses django's built in
+template engine to set the html message on the email.
 
-    # some_app/templates/welcome_email.html
+Lets rewrite the welcome email class to send an html message.
+
+.. code-block:: python
+
+   from emailtools import HTMLEmail
+
+   class WelcomeEmail(HTMLEmail):
+       template_name = 'app/welcome_email.html'
+       from_email = 'admin@example.com'
+       subject = 'Welcome to example.com'
+
+       def get_to(self):
+           return [self.args[0].email]
+
+       def get_context_data(self, **kwargs):
+           kwargs = super(WelcomeEmail, self).get_context_data(**kwargs)
+           kwargs['user'] = self.args[0]
+           return kwargs
+
+    send_welcome_email = WelcomeEmail.as_callable()
+
+And now our template.
+
+.. code-block:: html
+
+    # app/templates/app/welcome_email.html
     <h1>Welcome to example.com</h1>
-    <p>Hello {{ email }}. Thanks for signing up to <a href="http://www.example.com">example.com</a></p>
+    <p>Dear {{ user.email }}</p>
+    <p>Thank you for signing up to <a href="http://www.example.com">example.com</a></p>
+    <p>The example.com team</p>
 
-And now, we'll write our Email class.  While we're at it, lets personalize our
-message a bit and include the email address in the body of the message.::
-
-    from emailtools.cbe import HTMLEmail
-
-    class WelcomeEmail(HTMLEmail):
-        from_email = 'admin@example.com'
-        subject = 'Welcome'
-        body = 'Welcome to example.com'
-        template_name = 'welcome_email.html'
-
-        def get_to(self):
-            return self.args[0]
-
-        def get_context_data(self, **kwargs):
-            kwargs = super(WelcomeEmail, self).get_context_data(**kwargs)
-            kwargs['email'] = self.args[0]
-            return kwargs
-
-     send_welcome_email = WelcomeEmail.as_callable()
-     
-     # Send the email
-     send_welcome_email('user@example.com')
-
-This should be very familiar to anyone who's had any experience with class-based views.
-
-Markdown Emails
-~~~~~~~~~~~~~~~
-
-We all know how much developers love markdown.  ``django-emailtools`` also
-ships with a :class:`~emailtools.MarkdownEmail` class.
-
-.. note::
-
-    :class:`~emailtools.MarkdownEmail` requires a layout template.  By default,
-    it will use whatever is set in ``settings.EMAIL_LAYOUT``.  This can be
-    overridden on subclasses with the ``layout_template`` attribute, or
-    dynamically via the :meth`~emailtools.MarkdownEmail.get_layout_template`
-    method.
-
-    This template is responsible for constructing the html that wraps around
-    the body of the message content.
+Now, our message will be rendered using the template engine.
