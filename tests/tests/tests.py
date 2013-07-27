@@ -3,6 +3,11 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.core.exceptions import ImproperlyConfigured
 
+try:
+    from django.utils import unittest
+except ImportError:
+    import unittest  # NOQA
+
 from emailtools import BasicEmail, HTMLEmail, MarkdownEmail
 
 
@@ -86,9 +91,11 @@ class TestBasicCBE(TestCase):
         with self.assertRaises(ImproperlyConfigured):
             self.create_and_send_a_message(body=None)()
 
+    @unittest.expectedFailure
     def test_sending_kwargs(self):
         class SendingKwargsEmail(self.TestEmail):
             from_email = 'with\nnewline@gmail.com'
+            fail_silently = True
 
         SendingKwargsEmail.as_callable(fail_silently=True)()
         with self.assertRaises(mail.BadHeaderError):
