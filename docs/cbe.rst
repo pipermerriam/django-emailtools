@@ -13,58 +13,71 @@ Basic Example
 ~~~~~~~~~~~~~
 
 A very basic example of sending emails in django using the built in
-``send_mail`` function might look something like the following.::
+``send_mail`` function might look something like the following.
+
+.. code-block:: python
 
     from django.core.mail import send_mail
 
-    def send_welcome_email():
+    def send_registration_email():
         send_mail(
-            'Welcome',
-            'Welcome to example.com',
+            'A new user has registered on example.com.',
+            'A user has registered',
             'admin@example.com',
-            ['user@example.com'],
+            ['webmaster@example.com'],
         )
 
 
-Using class-based emails::
+Now, here is the same example using class based emails.
+
+.. code-block:: python
 
     from emailtools.cbe import BasicEmail
 
-    send_welcome_email = BasicEmail.as_callable(
-        to='user@example.com',
-        from_email='admin@example.com',
-        subject='Welcome',
-        body='Welcome to example.com',
-    )
-
-In both examples, calling the ``send_welcome_email`` function will send our
-welcome email to ``user@example.com``.  Since we only wanted to set a few
-attributes, we pass these into the :meth`~BaseEmail.as_callable` method
-itself.
-
-
-A More Useful Example
-~~~~~~~~~~~~~~~~~~~~~
-
-Our basic example isn't actually that useful.  Lets modify it a bit to allow us
-to dynamically set the ``to`` address on the email.  To do this, we will
-subclass :class:`~emailtools.BasicEmail` and override the method
-:meth`get_to` which is responsible for setting the ``to`` address.::
-
-    from emailtools.cbe import BasicEmail
-
-    class WelcomeEmail(BasicEmail):
+    class RegisteredEmail(BasicEmail):
+        to = 'webmaster@example.com'
         from_email = 'admin@example.com'
-        subject = 'Welcome'
-        body = 'Welcome to example.com'
+        subject = 'A user has registered'
+        message = 'A new user has registered on example.com.'
 
-        def get_to(self):
-            return self.args[0]
+   send_registration_email = UserRegisteredEmail.as_callable()
 
-     send_welcome_email = WelcomeEmail.as_callable()
+In both examples, calling the ``send_registration_email`` function will send an email to `webmaster@example.com` from the address `webmaster@example.com` with the subject *"A user has registered"* and with the message body *"A new user has registered on example.com"*.  Admittedly, this example is not very useful, so lets look at making some of these values more dynamic.
 
-     # Send the email
-     send_welcome_email('user@example.com')
+
+Setting dynamic values
+~~~~~~~~~~~~~~~~~~~~~~
+
+Now, lets write another example, in which our message body and the email recipient list and message body are dynamic.
+
+.. code-block:: python
+
+   # accounts/emails.py
+   from emailtools.cbe import BasicEmail
+
+   class WelcomeEmail(BasicEmail):
+       from_email = 'admin@example.com'
+       subject = 'Welcome to example.com'
+
+       def get_to(self):
+           return [self.args[0].email]
+
+       def get_body(self):
+           return """Dear {user.username},
+
+           Welcome to example.com,
+
+           - The example.com Team""".format(user=self.args[0])
+
+    send_welcome_email = WelcomeEmail.as_callable()
+
+Our new ``send_welcome_email`` function expects a single argument which it expects to be a ``user`` instance, from which it will extract the ``username`` for the message body, and the ``to`` address.  To send our email, we just call the ``send_welcome_email`` function with a user instance.
+
+.. code-block:: python
+
+   >>> from app.emails import send_welcome_email
+   >>> user = User.objects.get(...)
+   >>> send_welcome_email(user)  # Sends the welcome email.
 
 Instead of passing all of configuration in through
 :meth:`~emailtools.HTMLEmail.as_callable`, we define them as attributes on the
