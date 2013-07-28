@@ -13,11 +13,11 @@ def read(fname):
 
 
 install_requires = [
-    'Django>=1.4',
+    'Django>=1.3',
     'markdown',
 ]
 
-version = (0, 0, 1, 'alpha')
+version = (0, 1, 0, 'alpha')
 
 
 def get_version():
@@ -36,6 +36,9 @@ setup(
     description=__doc__,
     long_description=read('README.rst'),
     packages=[package for package in find_packages() if package.startswith('emailtools')],
+    url="https://django-emailtools.readthedocs.org/en/latest/",
+    author="Fusionbox",
+    author_email='programmers@fusionbox.com',
     install_requires=install_requires,
     zip_safe=False,
     include_package_data=True,
