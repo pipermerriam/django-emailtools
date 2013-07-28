@@ -115,9 +115,12 @@ class MarkdownEmail(HTMLEmail):
             raise ImproperlyConfigured('layout was not defined by settings.EMAIL_LAYOUT and none was provided')
         return [self.layout_template]
 
+    def get_layout_context_data(self, **kwargs):
+        return kwargs
+
     def get_rendered_template(self):
         md = super(MarkdownEmail, self).get_rendered_template()
         return loader.render_to_string(
             self.get_layout_template(),
-            {'content': mark_safe(markdown.markdown(md, ['extra']))},
+            self.get_layout_context_data(content=mark_safe(markdown.markdown(md, ['extra']))),
         )
