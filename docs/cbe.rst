@@ -38,7 +38,7 @@ Now, here is the same example using class based emails.
         to = 'webmaster@example.com'
         from_email = 'admin@example.com'
         subject = 'A user has registered'
-        message = 'A new user has registered on example.com.'
+        body = 'A new user has registered on example.com.'
 
    send_registration_email = UserRegisteredEmail.as_callable()
 
