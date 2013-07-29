@@ -15,6 +15,7 @@ def read(fname):
 install_requires = [
     'Django>=1.3',
     'markdown',
+    'funcsigs',
 ]
 
 version = (0, 1, 0, 'alpha')
