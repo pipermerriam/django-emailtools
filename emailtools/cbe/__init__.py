@@ -28,7 +28,7 @@ class BasicEmail(BaseEmail):
     fail_silently = False
 
     def get_email_message_kwargs(self, **kwargs):
-        kwargs = super(BasicEmail, self).get_email_message_kwargs()
+        kwargs = super(BasicEmail, self).get_email_message_kwargs(**kwargs)
         kwargs.update({
             'subject': self.get_subject(),
             'body': self.get_body(),

@@ -10,14 +10,14 @@ class BaseEmail(object):
     structure for constructing an email message and sending it, along with the
     `as_callable` method logic.
     """
-    email_message_class = None
+    @property
+    def email_message_class(self):
+        raise ImproperlyConfigured('No `email_message_class` provided')
 
     def get_email_message_kwargs(self, **kwargs):
         return kwargs
 
     def get_email_message_class(self):
-        if self.email_message_class is None:
-            raise ImproperlyConfigured('No `email_message_class` provided')
         return self.email_message_class
 
     def get_email_message(self):
