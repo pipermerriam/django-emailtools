@@ -13,103 +13,143 @@ Basic Example
 ~~~~~~~~~~~~~
 
 A very basic example of sending emails in django using the built in
-``send_mail`` function might look something like the following.::
+``send_mail`` function might look something like the following.
+
+.. code-block:: python
 
     from django.core.mail import send_mail
 
-    def send_welcome_email():
+    def send_registration_email():
         send_mail(
-            'Welcome',
-            'Welcome to example.com',
+            'A new user has registered on example.com.',
+            'A user has registered',
             'admin@example.com',
-            ['user@example.com'],
+            ['webmaster@example.com'],
         )
 
 
-Using class-based emails::
+Now, here is the same example using class based emails.
+
+.. code-block:: python
 
     from emailtools.cbe import BasicEmail
 
-    send_welcome_email = BasicEmail.as_callable(
-        to='user@example.com',
-        from_email='admin@example.com',
-        subject='Welcome',
-        body='Welcome to example.com',
-    )
+    class RegisteredEmail(BasicEmail):
+        to = 'webmaster@example.com'
+        from_email = 'admin@example.com'
+        subject = 'A user has registered'
+        message = 'A new user has registered on example.com.'
 
-In both examples, calling the ``send_welcome_email`` function will send our
-welcome email to ``user@example.com``.  Since we only wanted to set a few
-attributes, we pass these into the :method:`~BaseEmail.as_callable` method
-itself.
+   send_registration_email = UserRegisteredEmail.as_callable()
+
+In both examples, calling the ``send_registration_email`` function will send an email to `webmaster@example.com` from the address `webmaster@example.com` with the subject *"A user has registered"* and with the message body *"A new user has registered on example.com"*.  Admittedly, this example is not very useful, so lets look at making some of these values more dynamic.
 
 
-A More Useful Example
-~~~~~~~~~~~~~~~~~~~~~
+Emails with dynamic values
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Our basic example isn't actually that useful.  Lets modify it a bit to allow us
-to dynamically set the ``to`` address on the email.  To do this, we will
-subclass :class:`~emailtools.BasicEmail` and override the method
-:method:`get_to` which is responsible for setting the ``to`` address.::
+Now, lets write another example, in which our message body and the email recipient list and message body are dynamic.
 
-    from emailtools.cbe import BasicEmail
+.. code-block:: python
 
-    class WelcomeEmail(BasicEmail):
-        from_email = 'admin@example.com',
-        subject = 'Welcome',
-        body = 'Welcome to example.com',
+   # accounts/emails.py
+   from emailtools.cbe import BasicEmail
 
-        def get_to(self):
-            return self.args[0]
+   class WelcomeEmail(BasicEmail):
+       from_email = 'admin@example.com'
+       subject = 'Welcome to example.com'
 
-     send_welcome_email = WelcomeEmail.as_callable()
+       def get_to(self):
+           return [self.args[0].email]
+
+       def get_body(self):
+           return """Dear {user.username},
+
+           Welcome to example.com,
+
+           - The example.com Team""".format(user=self.args[0])
+
+    send_welcome_email = WelcomeEmail.as_callable()
+
+Our new ``send_welcome_email`` function expects a single argument which it expects to be a ``user`` instance, from which it will extract the ``username`` for the message body, and the ``to`` address.  To send our email, we just call the ``send_welcome_email`` function with a user instance.
+
+.. code-block:: python
+
+   >>> from app.emails import send_welcome_email
+   >>> user = User.objects.get(...)
+   >>> send_welcome_email(user)  # Sends the welcome email.
+
+.. note::
+
+   The :class:`~email.BasicEmail` class is essentially a wrapper around the
+   ``django.core.email.EmailMessage`` class with both properties and method
+   hooks for configuring, instantiating, and sending emails using that class.
 
 
 HTML Emails
 ~~~~~~~~~~~
 
-class-based emails provides the class :class:`~emailtools.HTMLEmail`.  Lets
-improve on our previous example.  First lets make ourselves a template.::
+While the simple examples above may work well for simple emails, most modern
+web applications are not just sending plain text emails.  ``emailtools`` ships
+with two solutions for constructing and sending emails with both a plain text
+message and an html message. Both the :class:`~emailtools.HTMLEmail` and
+:class:`~emailtools.MarkdownEmail` classes extend
+``django.core.email.EmailMultiAlternative``, and uses django's built in
+template engine to set the html message on the email.
 
-    # some_app/templates/welcome_email.html
+Lets rewrite the welcome email class to send an html message.
+
+.. code-block:: python
+
+   from emailtools import HTMLEmail
+
+   class WelcomeEmail(HTMLEmail):
+       template_name = 'app/welcome_email.html'
+       from_email = 'admin@example.com'
+       subject = 'Welcome to example.com'
+
+       def get_to(self):
+           return [self.args[0].email]
+
+       def get_context_data(self, **kwargs):
+           kwargs = super(WelcomeEmail, self).get_context_data(**kwargs)
+           kwargs['user'] = self.args[0]
+           return kwargs
+
+    send_welcome_email = WelcomeEmail.as_callable()
+
+And now our template.
+
+.. code-block:: html
+
+    # app/templates/app/welcome_email.html
     <h1>Welcome to example.com</h1>
-    <p>Hello {{ email }}. Thanks for signing up to <a href="http://www.example.com">example.com</a></p>
+    <p>Dear {{ user.email }}</p>
+    <p>Thank you for signing up to <a href="http://www.example.com">example.com</a></p>
+    <p>The example.com team</p>
 
-And now, we'll write our Email class.  While we're at it, lets personalize our
-message a bit and include the email address in the body of the message.::
+Now, our message will be rendered using the template engine.
 
-    from emailtools.cbe import HTMLEmail
 
-    class WelcomeEmail(HTMLEmail):
-        from_email = 'admin@example.com',
-        subject = 'Welcome',
-        body = 'Welcome to example.com',
-        template_name = 'welcome_email.html'
+About ``as_callable(**kwargs)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        def get_to(self):
-            return self.args[0]
+At this point, if you've used class based views, you should be noticing some
+similarities in ``as_callable`` and ``as_view``.  ``as_callable`` returns a
+callable function that will send the email.  Any ``*args`` and ``kwargs``
+passed into the email callable are accessible via ``self.args`` and
+``self.kwargs``, similar to class based views.  The specifics of how you use
+these arguments is up to you.
 
-        def get_context_data(self, **kwargs):
-            kwargs = super(WelcomeEmail, self).get_context_data(**kwargs)
-            kwargs['email'] = self.args[0]
-            return kwargs
+In addition, the email callable has a method ``message``.
 
-     send_welcome_email = WelcomeEmail.as_callable()
+.. code-block:: python
 
-This should be very familiar to anyone who's had any experience with class-based views.
-
-Markdown Emails
-~~~~~~~~~~~~~~~
-
-We all know how much developers love markdown.  ``django-emailtools`` also
-ships with a :class:`~emailtools.MarkdownEmail` class.
-
-.. note::
-
-    :class:`~emailtools.MarkdownEmail` requires a layout template.  By default,
-    it will use whatever is set in ``settings.EMAIL_LAYOUT``.  This can be
-    overridden on subclasses with the ``layout_template`` attribute, or
-    dynamically via the :method:`~emailtools.MarkdownEmail.get_layout_template`
-    method.
-
-    This template is responsible for constructing the html that wraps around
-    the body of the message content.
+   >>> from my_app.emails import send_welcome_email
+   >>> send_welcome_email(...)  # Sends the email.
+   >>> message = send_welcome_email.message(...)
+   >>> message
+   <django.core.mail.message.EmailMultiAlternatives at 0x10668d150>
+   >>> message.send()  # Also sends the email.
+   
+Directly calling the email callable, and calling ``send()`` on the instantiated email message are identical.  Both the email callable, and the ``message`` method have the same call signature.

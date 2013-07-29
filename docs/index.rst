@@ -10,6 +10,8 @@ Contents:
 
     intro
     cbe
+    api
+    how-to
     changelog
 
 Development
