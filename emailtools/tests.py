@@ -115,9 +115,10 @@ class TestBasicCBE(TestCase):
         with self.assertRaises(mail.BadHeaderError):
             SendingKwargsEmail.as_callable()()
 
-    def test_basic_call_signature(self):
+    def test_basic_init_overide(self):
         class TestEmail(self.TestEmail):
-            call_signature = lambda self, x: None
+            def __init__(self, x):
+                super(TestEmail, self).__init__(x)
 
         TestEmail('arst')
         TestEmail(x='arst')
@@ -127,24 +128,6 @@ class TestBasicCBE(TestCase):
 
         with self.assertRaises(TypeError):
             TestEmail('arst', 'tsra')
-
-    def test_fully_declared_call_signature(self):
-        class TestEmail(self.TestEmail):
-            def call_signature(self, x, y=3):
-                pass
-
-        TestEmail('arst')
-        TestEmail('arst', 'tsra')
-        TestEmail(x='arst')
-        TestEmail(x='arst', y='tsra')
-        TestEmail(y='arst', x='tsra')
-        TestEmail('arst', y='tsra')
-
-        with self.assertRaises(TypeError):
-            TestEmail()
-
-        with self.assertRaises(TypeError):
-            TestEmail('arst', 'tsra', 'asdf')
 
 
 class TestHTMLEmail(TestCase):

@@ -1,4 +1,3 @@
-from funcsigs import signature, Signature
 from functools import update_wrapper
 
 from django.utils.decorators import classonlymethod
@@ -11,13 +10,6 @@ class BaseEmail(object):
     structure for constructing an email message and sending it, along with the
     `as_callable` method logic.
     """
-    call_signature = None
-
-    def get_call_signature(self):
-        if isinstance(self.call_signature, Signature):
-            return self.call_signature
-        return signature(self.call_signature)
-
     @property
     def email_message_class(self):
         raise ImproperlyConfigured('No `email_message_class` provided')
@@ -43,11 +35,8 @@ class BaseEmail(object):
         self.get_email_message().send(**self.get_send_kwargs())
 
     def __init__(self, *args, **kwargs):
-        if self.call_signature:
-            self.bound_args = self.get_call_signature().bind(*args, **kwargs)
-        else:
-            self.args = args
-            self.kwargs = kwargs
+        self.args = args
+        self.kwargs = kwargs
 
     @classonlymethod
     def as_callable(cls, **initkwargs):

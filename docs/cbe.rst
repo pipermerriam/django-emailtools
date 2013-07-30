@@ -130,26 +130,67 @@ And now our template.
 
 Now, our message will be rendered using the template engine.
 
+Call Signature
+~~~~~~~~~~~~~~
+
+Up until now, accessing the calling arguments for our email function has
+involved accessing them in ``self.args`` or ``self.kwargs``, which is both ugly
+and unintuitive.  If you take a look at the ``__init__`` method of
+:class:`~emailtools.BaseEmail` you'll see that it merely sets ``*args`` and
+``**kwargs`` as ``self.args`` and ``self.kwargs``.  This is the default
+behavior for all email classes, and it is entirely in the developers hands to
+override this in any way you please.
+
+Here is a slighltly modified version of our ``WelcomeEmail`` that demonstrates
+this concept.
+
+.. code-block:: python
+
+   from emailtools import HTMLEmail
+
+   class WelcomeEmail(HTMLEmail):
+       template_name = 'app/welcome_email.html'
+       from_email = 'admin@example.com'
+       subject = 'Welcome to example.com'
+
+       def __init__(self, user):
+           self.user = user
+           self.to = [user.email]
+
+       def get_context_data(self, **kwargs):
+           kwargs = super(WelcomeEmail, self).get_context_data(**kwargs)
+           kwargs['user'] = self.user
+           return kwargs
+
+    send_welcome_email = WelcomeEmail.as_callable()
+
+
+We gain readability, and validation that the caller complied with the call
+signature of our email class.  In this example, we didn't call super on
+``__init__``, which is fine.  The ``__init__`` method is yours to overide and
+modify in whatever way suites the needs of your application.
 
 About ``as_callable(**kwargs)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 At this point, if you've used class based views, you should be noticing some
 similarities in ``as_callable`` and ``as_view``.  ``as_callable`` returns a
-callable function that will send the email.  Any ``*args`` and ``kwargs``
+callable function that will send the email.  By default, any ``*args`` and ``kwargs``
 passed into the email callable are accessible via ``self.args`` and
-``self.kwargs``, similar to class based views.  The specifics of how you use
-these arguments is up to you.
+``self.kwargs``, similar to class based views.  This however is only the
+default implimentation of the ``__init__`` method for class based emails.  You
+may override the ``__init__`` method however you would like.
 
-In addition, the email callable has a method ``message``.
+From our example above, the following two ways of sending emails are
+effectively the same.
 
 .. code-block:: python
 
-   >>> from my_app.emails import send_welcome_email
-   >>> send_welcome_email(...)  # Sends the email.
-   >>> message = send_welcome_email.message(...)
-   >>> message
-   <django.core.mail.message.EmailMultiAlternatives at 0x10668d150>
-   >>> message.send()  # Also sends the email.
+   >>> from my_app.emails import WelcomeEmail
+   >>> send_welcome_email = WelcomeEmail.as_callable()
+   >>> send_welcome_email(user)  # Sends the email.
+   >>> email_instance = WelcomeEmail(user)
+   >>> email_instance.send()
    
-Directly calling the email callable, and calling ``send()`` on the instantiated email message are identical.  Both the email callable, and the ``message`` method have the same call signature.
+Directly calling the email callable, and calling ``send()`` on the instantiated
+email class are identical.

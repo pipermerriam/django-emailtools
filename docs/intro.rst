@@ -74,7 +74,9 @@ Or if you wanted to do something with the message before you sent it:
 
 .. code-block:: python
 
-   >>> message = send_welcome_email.message('joe.smith@example.com')
+   >>> from myapp.emails import WelcomeEmail
+   >>> email_instance = WelcomeEmail
+   >>> message = email_instance.get_email_message()
    >>> message
    <django.core.mail.message.EmailMultiAlternatives at 0x10668d150>
    >>> message.send()  # Sends the email.
