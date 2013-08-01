@@ -16,7 +16,7 @@ except ImportError:
 from django.core.exceptions import ImproperlyConfigured
 
 
-from emailtools import BasicEmail, HTMLEmail, MarkdownEmail
+from emailtools import BaseEmail, BasicEmail, HTMLEmail, MarkdownEmail
 
 
 class TestBasicCBE(TestCase):
@@ -44,8 +44,8 @@ class TestBasicCBE(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
     def test_create_message(self):
-        email_callable = self.TestEmail.as_callable()
-        message = email_callable.message()
+        email_instance = self.TestEmail()
+        message = email_instance.get_email_message()
 
         self.assertTrue(isinstance(message, self.TestEmail.email_message_class))
 
@@ -80,8 +80,14 @@ class TestBasicCBE(TestCase):
         self.assertEqual(message.to, ['string@example.com'])
 
     def test_missing_message_class(self):
+        class TestEmail(BaseEmail):
+            subject = self.EMAIL_ATTRS['subject']
+            to = self.EMAIL_ATTRS['to']
+            from_email = self.EMAIL_ATTRS['from_email']
+            body = self.EMAIL_ATTRS['body']
+
         with self.assertRaises(ImproperlyConfigured):
-            self.TestEmail.as_callable(email_message_class=None)()
+            TestEmail.as_callable()()
 
     def test_missing_to(self):
         with self.assertRaises(ImproperlyConfigured):
@@ -108,6 +114,20 @@ class TestBasicCBE(TestCase):
         SendingKwargsEmail.as_callable(fail_silently=True)()
         with self.assertRaises(mail.BadHeaderError):
             SendingKwargsEmail.as_callable()()
+
+    def test_basic_init_overide(self):
+        class TestEmail(self.TestEmail):
+            def __init__(self, x):
+                super(TestEmail, self).__init__(x)
+
+        TestEmail('arst')
+        TestEmail(x='arst')
+
+        with self.assertRaises(TypeError):
+            TestEmail()
+
+        with self.assertRaises(TypeError):
+            TestEmail('arst', 'tsra')
 
 
 class TestHTMLEmail(TestCase):

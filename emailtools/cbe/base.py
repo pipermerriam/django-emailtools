@@ -10,14 +10,19 @@ class BaseEmail(object):
     structure for constructing an email message and sending it, along with the
     `as_callable` method logic.
     """
-    email_message_class = None
+    @property
+    def email_message_class(self):
+        raise ImproperlyConfigured('No `email_message_class` provided')
+
+    @email_message_class.setter  # NOQA
+    def email_message_class(self, value):
+        self.__dict__['email_message_class'] = value
+        return value
 
     def get_email_message_kwargs(self, **kwargs):
         return kwargs
 
     def get_email_message_class(self):
-        if self.email_message_class is None:
-            raise ImproperlyConfigured('No `email_message_class` provided')
         return self.email_message_class
 
     def get_email_message(self):
@@ -29,9 +34,9 @@ class BaseEmail(object):
     def send(self):
         self.get_email_message().send(**self.get_send_kwargs())
 
-    def __init__(self, **kwargs):
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
 
     @classonlymethod
     def as_callable(cls, **initkwargs):
@@ -42,20 +47,11 @@ class BaseEmail(object):
                                 "already attributes of the "
                                 "class.".format(cls.__name__, key))
 
+        EmailClass = type("Callable{0}".format(cls.__name__), (cls,), initkwargs)
+
         def callable(*args, **kwargs):
-            self = cls(**initkwargs)
-            self.args = args
-            self.kwargs = kwargs
+            self = EmailClass(*args, **kwargs)
             return self.send()
 
-        def message(*args, **kwargs):
-            self = cls(**initkwargs)
-            self.args = args
-            self.kwargs = kwargs
-            return self.get_email_message()
-
-        callable.message = message
-
-        update_wrapper(callable, cls, updated=())
-        update_wrapper(callable.message, cls, updated=())
+        update_wrapper(callable, EmailClass, updated=())
         return callable

@@ -2,3 +2,10 @@
 ------------------
 
 Initial Release
+
+0.2.0
+-----
+
+- remove ``message`` methog on email callables in favor of direct class instantiation.
+- make ``as_callable`` use an subclass of the email message with the overridden
+  ``**kwargs`` calling arguments.
