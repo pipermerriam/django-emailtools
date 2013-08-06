@@ -6,4 +6,5 @@ tests/.coverage
 tests/htmlcov/
 dist/
 .tox
+build/
 tmp/
