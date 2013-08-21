@@ -157,7 +157,10 @@ MarkdownEmail
 
 .. class:: MarkdownEmail
 
-   Similar to :class:`HTMLEmail`, this class uses the django template engine for rendering an html email message.  It however expects a template written in markdown, which is then inserted into the body of a base html template.
+   Similar to :class:`HTMLEmail`, this class uses the django template engine
+   for rendering an html email message.  It however expects a template written
+   in markdown, which is then inserted into the body of a base html template.
+
 
     .. attribute:: layout_template
 
@@ -167,7 +170,9 @@ MarkdownEmail
 
     .. attribute:: template_name
 
-        Path to the template that should be used for rendering the body of the message.
+        Path to the template that should be used for rendering the body of the
+        message.  This template is rendered as markdown and then inserted into
+        the template returned by :meth:`get_layout_template`.
 
     .. method:: get_context_data(**kwargs)
 
@@ -176,8 +181,15 @@ MarkdownEmail
     .. method:: get_layout_template()
 
         Returns the template that should be used for rending the base html
-        layout of the message.
+        layout of the message.  If ``layout_template`` is not set on the class,
+        this method returns the value found in ``settings.EMAIL_LAYOUT``.  This
+        template will be rendered with the context returned by
+        :meth:`get_layout_context_data`, which by default contains one value
+        ``content`` which is the rendered markdown content.
 
     .. method:: get_layout_context_data(**kwargs)
 
         Constructs and renders the context data for the base layout template.
+        By default, this returns a context with a single value ``content``
+        which contains the rendered markdown content from the markdown
+        template.
