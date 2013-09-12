@@ -17,7 +17,7 @@ install_requires = [
     'markdown',
 ]
 
-version = (0, 2, 0, 'stable')
+version = (0, 2, 0, 'final')
 
 
 def get_version():
