@@ -69,7 +69,7 @@ class BasicEmail(BaseEmail):
 
     def get_from_email(self):
         if self.from_email is None:
-            raise ImproperlyConfigured('No `from_email` provided')
+            return settings.DEFAULT_FROM_EMAIL
         return self.from_email
 
     def get_subject(self):
