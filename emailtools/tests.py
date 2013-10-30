@@ -93,10 +93,6 @@ class TestBasicCBE(TestCase):
         with self.assertRaises(ImproperlyConfigured):
             self.create_and_send_a_message(to=None)()
 
-    def test_missing_from(self):
-        with self.assertRaises(ImproperlyConfigured):
-            self.create_and_send_a_message(from_email=None)()
-
     def test_missing_subject(self):
         with self.assertRaises(ImproperlyConfigured):
             self.create_and_send_a_message(subject=None)()

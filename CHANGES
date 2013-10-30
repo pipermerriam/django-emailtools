@@ -3,9 +3,14 @@
 
 Initial Release
 
-0.2.0
------
+0.2.0 (2013-09-12)
+------------------
 
 - remove ``message`` methog on email callables in favor of direct class instantiation.
 - make ``as_callable`` use an subclass of the email message with the overridden
   ``**kwargs`` calling arguments.
+
+0.2.1 (2013-10-30)
+------------------
+
+- make ``from_email`` default to ``settings.DEFAULT_FROM_EMAIL``
