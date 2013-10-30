@@ -17,7 +17,9 @@ install_requires = [
     'markdown',
 ]
 
-version = (0, 2, 0, 'final')
+STAGE = 'final'
+
+version = (0, 2, 1, STAGE)
 
 
 def get_version():
