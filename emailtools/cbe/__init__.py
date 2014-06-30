@@ -6,9 +6,17 @@ from django.conf import settings
 from django.utils.html import strip_tags
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
+from django.utils.datastructures import SortedDict
 
 from .base import BaseEmail
 from .mixins import TemplateEmailMixin
+
+
+def stripnewlines(string):
+    """
+    Replaces all newlines with spaces.
+    """
+    return ' '.join(string.splitlines())
 
 
 class BasicEmail(BaseEmail):
@@ -30,14 +38,17 @@ class BasicEmail(BaseEmail):
     def get_email_message_kwargs(self, **kwargs):
         kwargs = super(BasicEmail, self).get_email_message_kwargs(**kwargs)
         kwargs.update({
-            'subject': self.get_subject(),
+            'subject': stripnewlines(self.get_subject()),
             'body': self.get_body(),
-            'from_email': self.get_from_email(),
+            'from_email': stripnewlines(self.get_from_email()),
             'to': self.get_to(),
             'cc': self.get_cc(),
             'bcc': self.get_bcc(),
             'connection': self.get_connection(),
-            'headers': self.get_headers(),
+            'headers': SortedDict((
+                (key, stripnewlines(value))
+                for key, value in self.get_headers().items()
+            ))
         })
         return kwargs
 

@@ -101,16 +101,6 @@ class TestBasicCBE(TestCase):
         with self.assertRaises(ImproperlyConfigured):
             self.create_and_send_a_message(body=None)()
 
-    @unittest.expectedFailure
-    def test_sending_kwargs(self):
-        class SendingKwargsEmail(self.TestEmail):
-            from_email = 'with\nnewline@gmail.com'
-            fail_silently = True
-
-        SendingKwargsEmail.as_callable(fail_silently=True)()
-        with self.assertRaises(mail.BadHeaderError):
-            SendingKwargsEmail.as_callable()()
-
     def test_basic_init_overide(self):
         class TestEmail(self.TestEmail):
             def __init__(self, x):
@@ -133,6 +123,21 @@ class TestBasicCBE(TestCase):
 
         message = TestEmail().get_email_message().message()
         self.assertEqual(message['Test-Header'], 'foo')
+
+    def test_multiline_headers_autocorrection(self):
+        multiline_subject = """Hello
+        There"""
+        multiline_email_address = """Foo
+        <foo@example.com>"""
+        send_email = self.TestEmail.as_callable(
+            subject=multiline_subject,
+            from_email=multiline_email_address,
+            headers={
+                'My Header': multiline_subject,
+            },
+        )
+        # Would raise a BadHeaderError
+        send_email()
 
 
 class TestHTMLEmail(TestCase):
