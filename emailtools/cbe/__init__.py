@@ -37,6 +37,7 @@ class BasicEmail(BaseEmail):
             'cc': self.get_cc(),
             'bcc': self.get_bcc(),
             'connection': self.get_connection(),
+            'headers': self.get_headers(),
         })
         return kwargs
 
