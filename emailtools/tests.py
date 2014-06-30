@@ -125,6 +125,15 @@ class TestBasicCBE(TestCase):
         with self.assertRaises(TypeError):
             TestEmail('arst', 'tsra')
 
+    def test_extra_headers(self):
+        class TestEmail(self.TestEmail):
+            headers = {
+                'Test-Header': 'foo',
+            }
+
+        message = TestEmail().get_email_message().message()
+        self.assertEqual(message['Test-Header'], 'foo')
+
 
 class TestHTMLEmail(TestCase):
     EMAIL_ATTRS = {
