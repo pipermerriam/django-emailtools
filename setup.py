@@ -19,7 +19,7 @@ install_requires = [
 
 STAGE = 'alpha'
 
-version = (0, 2, 1, STAGE)
+version = (1, 0, 0, STAGE)
 
 
 def get_version():
