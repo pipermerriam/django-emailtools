@@ -1,7 +1,7 @@
-0.1.1 (2013-07-27)
+0.2.1 (2013-10-30)
 ------------------
 
-Initial Release
+- make ``from_email`` default to ``settings.DEFAULT_FROM_EMAIL``
 
 0.2.0 (2013-09-12)
 ------------------
@@ -10,7 +10,7 @@ Initial Release
 - make ``as_callable`` use an subclass of the email message with the overridden
   ``**kwargs`` calling arguments.
 
-0.2.1 (2013-10-30)
+0.1.1 (2013-07-27)
 ------------------
 
-- make ``from_email`` default to ``settings.DEFAULT_FROM_EMAIL``
+Initial Release
