@@ -1,3 +1,9 @@
+0.2.2 (2014-07-04)
+------------------
+
+- Bugfix: actually attach attachments
+- Bugfix: actually use the headers parameter
+
 0.2.1 (2013-10-30)
 ------------------
 
