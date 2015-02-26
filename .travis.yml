@@ -12,3 +12,8 @@ install:
   - pip install -q $DJANGO_PACKAGE --use-mirrors
   - python setup.py install
 script: make test
+
+matrix:
+  exclude:
+    - python: "2.6"
+      env: DJANGO_PACKAGE=Django==1.7.5
