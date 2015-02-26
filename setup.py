@@ -2,6 +2,7 @@
 from setuptools import setup, find_packages
 import subprocess
 import os
+import sys
 
 __doc__ = """
 App for Django featuring class based email sending
@@ -16,6 +17,9 @@ install_requires = [
     'Django>=1.3',
     'markdown',
 ]
+
+if sys.version.startswith("2.6"):
+    install_requires.append("importlib")
 
 STAGE = 'alpha'
 
