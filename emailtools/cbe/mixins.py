@@ -73,7 +73,9 @@ class UserTokenEmailMixin(BuildAbsoluteURIMixin):
     def get_uid(self, user):
         return int_to_base36(user.pk)
 
-    def reverse_token_url(self, view_name, args=None, kwargs={}):
+    def reverse_token_url(self, view_name, args=None, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
         kwargs.setdefault(self.UID_KWARG, self.get_uid(self.get_user()))
         kwargs.setdefault(self.TOKEN_KWARG, self.generate_token(self.get_user()))
         return self.reverse_absolute_uri(view_name, args=args, kwargs=kwargs)
