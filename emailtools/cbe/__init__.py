@@ -124,5 +124,9 @@ class MarkdownEmail(HTMLEmail):
         md = super(MarkdownEmail, self).get_rendered_template()
         return loader.render_to_string(
             self.get_layout_template(),
-            self.get_layout_context_data(content=mark_safe(markdown.markdown(md, ['extra']))),
+            self.get_layout_context_data(
+                content=mark_safe(
+                    markdown.markdown(md, extensions=['markdown.extensions.extra']),
+                ),
+            ),
         )
